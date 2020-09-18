@@ -104,7 +104,11 @@ def calculate_class_probabilities(new_row, class_summaries, types):
     probs = dict()
     
     for key in class_summaries:
-        prob = class_summaries[key][0][-1] / num_training_rows # P(class)
+        try:
+            prob = class_summaries[key][0][-1] / num_training_rows # P(class)
+        except:
+            prob = class_summaries[key][0]['length'] / num_training_rows
+            
         for i, attribute_summary in enumerate(class_summaries[key]):
             if type(attribute_summary) == tuple:
                 prob *= gaussian_probability(new_row[i], attribute_summary[0], attribute_summary[1])
@@ -176,17 +180,24 @@ def evaluate_bayes(dataset, n_folds, types):
         
 if __name__ == '__main__':
     #seed(1)
-    filename = 'manual.csv'
+    filename = 'generated_data/complete_1A_4A_11A_12A.csv'
     data = load_csv(filename)
     dataset = data[0]
     types = data[1]
     for i, val in enumerate(types):
         if val == 'continuous':
             str_cols_to_float(dataset, [i])
+    
+    # single prediction
+    """summaries = summarize_by_class(dataset, types)
+    print(predict([1.3, 'red', None], summaries, types))
+    """
     # convert class column to integers
     #str_col_to_int(dataset, len(dataset[0])-1)
     # evaluate algorithm
-    n_folds = 2
+   
+    n_folds = 5
     scores = evaluate_bayes(dataset, n_folds, types)
     print('Scores: %s' % scores)
     print('Mean Accuracy: %.3f%%' % (sum(scores)/float(len(scores))))
+    
