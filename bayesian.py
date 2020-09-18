@@ -1,6 +1,8 @@
 import csv
+import sys
 from random import seed, randrange
 from math import sqrt, pi, exp, ceil
+
 # No class names can be 'length'
 # first line of csv must describe whether each column is
 # categorical or continuous
@@ -180,7 +182,9 @@ def evaluate_bayes(dataset, n_folds, types):
         
 if __name__ == '__main__':
     #seed(1)
-    filename = 'generated_data/complete_1A_4A_11A_12A.csv'
+    # just assume lat and long for now
+    
+    filename = 'generated_data/complete_13A_14A_9A.csv'
     data = load_csv(filename)
     dataset = data[0]
     types = data[1]

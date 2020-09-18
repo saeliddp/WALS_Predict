@@ -1,9 +1,41 @@
 import csv
 
+language_list = []
+def get_location(language_code):
+    if len(language_list) == 0:
+        with open('languages.csv', newline='') as fr:
+            for line in csv.reader(fr):
+                language_list.append(line)
+                
+    target_row = binary_search(language_code, language_list)
+    if target_row is not None:
+        return [target_row[3], target_row[4]]
+
+def binary_search(lang_code, lang_list):
+    return bs_helper(lang_code, lang_list, 0, len(lang_list) - 1)
+
+def bs_helper(lang_code, lang_list, start, end):
+    mid = int((start + end) / 2)
+    curr_code = lang_list[mid][0]
+    if curr_code == lang_code:
+        return lang_list[mid]
+    elif end - start <= 1:
+        return None
+    elif curr_code > lang_code:
+        return bs_helper(lang_code, lang_list, start, mid)
+    else:
+        return bs_helper(lang_code, lang_list, mid, end)
+        
 # last value in attribute_list must be what we try to predict
-def collect_full_data(source_file, attribute_list):
+def collect_full_data(source_file, attribute_list, lat=False, long=False):
     type_list = []
     for _ in attribute_list:
+        type_list.append('discrete')
+    if lat:
+        type_list[-1] = 'continuous'
+        type_list.append('discrete')
+    if long:
+        type_list[-1] = 'continuous'
         type_list.append('discrete')
         
     lang_to_att = dict()
@@ -26,11 +58,31 @@ def collect_full_data(source_file, attribute_list):
         writer.writerow(type_list)
         for lang in lang_to_att:
             if None not in lang_to_att[lang]:
+                if lat or long:
+                    location = get_location(lang)
+                    if lat:
+                        temp = lang_to_att[lang][-1]
+                        lang_to_att[lang][-1] = location[0]
+                        lang_to_att[lang].append(temp)
+                    if long:
+                        temp = lang_to_att[lang][-1]
+                        lang_to_att[lang][-1] = location[1]
+                        lang_to_att[lang].append(temp)
                 # for debugging
                 #lang_to_att[lang].append(lang)
                 writer.writerow(lang_to_att[lang])
                 num_written += 1
             elif lang_to_att[lang].index(None) == len(lang_to_att[lang]) - 1:
+                if lat or long:
+                    location = get_location(lang)
+                    if lat:
+                        temp = lang_to_att[lang][-1]
+                        lang_to_att[lang][-1] = location[0]
+                        lang_to_att[lang].append(temp)
+                    if long:
+                        temp = lang_to_att[lang][-1]
+                        lang_to_att[lang][-1] = location[1]
+                        lang_to_att[lang].append(temp)
                 lang_to_att[lang].append(lang)
                 missing_only_output.append(lang_to_att[lang])
     
@@ -45,5 +97,5 @@ def collect_full_data(source_file, attribute_list):
     print(str(len(missing_only_output)) + ' languages missing only output variable.')
     
 if __name__ == '__main__':
-    collect_full_data('values.csv', ['1A', '4A', '11A', '12A'])
+    collect_full_data('values.csv', ['13A', '14A', '9A'], lat=True, long=True)
             
